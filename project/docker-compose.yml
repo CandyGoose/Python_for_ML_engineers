@@ -1,26 +1,30 @@
 version: '3.8'
 
 services:
-  web1:
-    build: ./src
-    volumes:
-      - ./src:/src
+  db:
+    image: postgres:15
+    container_name: postgres
     environment:
-      SERVER_ID: SERVER-1
-
-  web2:
-    build: ./src
-    volumes:
-      - ./src:/src
-    environment:
-      SERVER_ID: SERVER-2
-
-  nginx:
-    image: nginx:latest
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db
     ports:
-      - "80:80"
+      - "5432:5432"
     volumes:
-      - ./nginx:/etc/nginx/conf.d
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: ./src
+    container_name: fast_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app
+    environment:
+      DATABASE_URL: postgresql://user:password@db/db
     depends_on:
-      - web1
-      - web2
+      - db
+
+volumes:
+  db_data:
