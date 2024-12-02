@@ -3,7 +3,7 @@ from os import getenv
 from fastapi import FastAPI, HTTPException
 from rdkit import Chem
 
-from models import Molecule, SubstructureSearch
+from src.models import Molecule, SubstructureSearch
 
 app = FastAPI()
 
