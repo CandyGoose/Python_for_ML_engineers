@@ -38,11 +38,7 @@ jobs:
 
     - name: Run Docker Compose
       run: |
-        docker-compose -f ../docker-compose.yml up -d
-
-    - name: Wait for db to be ready
-      run: |
-        docker-compose exec -T db bash -c "until pg_isready -h db -U user -d db; do echo waiting for db; sleep 2; done;"
+        docker-compose -f ../docker-compose.yml up -d --wait      
 
     - name: Run tests
       run: |
