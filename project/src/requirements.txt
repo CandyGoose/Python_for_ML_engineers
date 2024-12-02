@@ -2,3 +2,5 @@ fastapi
 uvicorn
 rdkit
 httpx
+sqlalchemy
+psycopg2
