@@ -9,7 +9,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./project
+        working-directory: ./project/src
 
     steps:
     - name: Checkout code
@@ -30,4 +30,4 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest
+        pytest ..
