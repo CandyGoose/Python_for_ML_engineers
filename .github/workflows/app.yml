@@ -15,14 +15,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Set up Docker Compose
-      run: |
-        sudo apt-get update
-        sudo apt-get install docker-compose
-
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -34,16 +26,8 @@ jobs:
 
     - name: Lint with flake8
       run: |
-        flake8 . --config=../flake8/.flake8
-
-    - name: Run Docker Compose
-      run: |
-        docker-compose -f ../docker-compose.yml up -d --wait      
+        flake8 . --config=flake8/.flake8
 
     - name: Run tests
       run: |
         pytest ..
-
-    - name: Shutdown Docker Compose
-      run: |
-        docker-compose down
