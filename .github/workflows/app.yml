@@ -30,7 +30,11 @@ jobs:
         pip install flake8
         flake8 .
 
+    - name: Set PYTHONPATH for tests
+      run: |
+        echo "PYTHONPATH=$(pwd)/src" >> $GITHUB_ENV
+
     - name: Run tests
       run: |
         pip install pytest
-        pytest
+        pytest src/test_app.py  # Убедитесь, что тесты запускаются из правильной папки
