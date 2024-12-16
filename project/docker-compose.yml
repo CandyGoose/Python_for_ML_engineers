@@ -27,6 +27,14 @@ services:
       - db
       - redis
 
+  celery_worker:
+    build: ./src
+    command: celery -A celery_worker worker --loglevel=info
+    depends_on:
+      - redis
+    volumes:
+      - ./src:/app
+
   redis:
     image: redis:alpine
     container_name: redis

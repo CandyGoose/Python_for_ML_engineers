@@ -2,12 +2,15 @@ import json
 import logging
 from os import getenv
 
+import celery
 import redis
+from celery.result import AsyncResult
 from fastapi import FastAPI, HTTPException, Depends
 from rdkit import Chem
 from sqlalchemy.orm import Session
 
 from models import MoleculeDB, Molecule, SubstructureSearch, SessionLocal, engine
+from tasks import perform_substructure_search
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -137,29 +140,17 @@ def list_molecules(limit: int = 100, offset: int = 0, db: Session = Depends(get_
 
 
 @app.post("/search")
-def search_substructure(search: SubstructureSearch, db: Session = Depends(get_db)):
-    sub_mol = Chem.MolFromSmiles(search.substructure)
-    if not sub_mol:
-        raise HTTPException(status_code=400, detail="Invalid substructure SMILES string.")
+def search_substructure(search: SubstructureSearch):
+    task = perform_substructure_search.apply_async(args=[search.substructure])
+    return {"task_id": task.id, "status": task.status}
 
-    cache_key = f"search:{search.substructure}"
 
-    cached_result = get_cached_result(cache_key)
-    if cached_result:
-        logger.info(f"Cache hit for substructure search: {cache_key}")
-        return {"source": "cache", "data": cached_result}
-
-    matching_molecules = db.query(MoleculeDB).filter(MoleculeDB.smiles.like(f"%{search.substructure}%")).all()
-
-    search_result = {
-        "total_found": len(matching_molecules),
-        "matching_molecules": [
-            {"identifier": mol.identifier, "smiles": mol.smiles} for mol in matching_molecules
-        ]
-    }
-
-    set_cache(cache_key, search_result)
-
-    logger.info(f"Substructure search for {search.substructure} returned {len(matching_molecules)} results.")
-
-    return search_result
+@app.get("/tasks/{task_id}")
+def get_task_result(task_id: str):
+    task_result = AsyncResult(task_id, app=celery)
+    if task_result.state == 'PENDING':
+        return {"task_id": task_id, "status": "Task is still processing"}
+    elif task_result.state == 'SUCCESS':
+        return {"task_id": task_id, "status": "Task completed", "result": task_result.result}
+    else:
+        return {"task_id": task_id, "status": task_result.state}
