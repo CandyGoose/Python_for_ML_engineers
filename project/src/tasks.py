@@ -1,9 +1,10 @@
 import os
 
+from rdkit import Chem
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from celery_worker import celery
-from rdkit import Chem
 from models import MoleculeDB
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db/db")
@@ -11,9 +12,6 @@ SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@
 
 @celery.task
 def perform_substructure_search(substructure_smiles: str):
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-
     engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db = SessionLocal()
