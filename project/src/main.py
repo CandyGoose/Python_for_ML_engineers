@@ -15,6 +15,8 @@ from tasks import perform_substructure_search
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+app = FastAPI()
+
 redis_client = redis.Redis(host='redis', port=6379, db=0)
 
 MoleculeDB.metadata.create_all(bind=engine)
