@@ -25,6 +25,13 @@ services:
       DATABASE_URL: postgresql://user:password@db/db
     depends_on:
       - db
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
 
 volumes:
   db_data:
